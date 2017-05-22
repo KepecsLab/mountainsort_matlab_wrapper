@@ -37,6 +37,10 @@ findfolder = ~cellfun(@isempty,findfolder);
 
 folders_found = folders(findfolder);
 
+%start daemon
+mlsystem('mp-set-default-daemon admin');
+mlsystem('mp-daemon-start admin');
+
 Errors = [' '];
 for s = 1:length(folders_found)%sessions of day
     
@@ -47,7 +51,7 @@ for s = 1:length(folders_found)%sessions of day
     %pipeline spec
     mkdir(fullfile(sortingpathbase,animal,session));
     pipelines_txt = fopen(fullfile(sortingpathbase,animal,session,'pipelines.txt'),'w');
-    fprintf(pipelines_txt,'ms2 mountainsort_002.pipeline --curation=curation.script\n');
+    fprintf(pipelines_txt,'ms2 mountainsort_002.pipeline --curation=curation.script --generate_pre=1 --generate_filt=1 \n');
     fclose(pipelines_txt);
     %datasets spec
     datasets_txt = fopen(fullfile(sortingpathbase,animal,session,'datasets.txt'),'w');
@@ -106,15 +110,12 @@ for s = 1:length(folders_found)%sessions of day
         clusters.firings=firings;
         
         %cellbase conversion
-        lead = find([clusters.header(:).Tstart]==[clusters.header(:).TstartOriginal],1,'first');
-        if ismember(lead,[1,2,3,4]) && numel(lead)==1
-            ncs_file = fullfile(serverpathbase,animal,session,strcat('CSC',num2str((tetrodes_used(t)-1)*4+lead),'.ncs'));
-            NewSpikes = ConvertTimesToCB(ncs_file,clusters);
-            
+        try
+            NewSpikes = ConvertTimesToCB(clusters);
             clusters.firings_cellbase = NewSpikes;
-        else
-            clusters.firings_cellbase = 'ExecuteSortingKron:spike times could not be re-aligned.';
-            Errors = [Errors,'ExecuteSortingKron:spike times could not be re-aligned for tetrode ',num2str(tetrodes_used(t)),'.\n'];
+        catch
+            clusters.firings_cellbase = 'ExecuteSortingKron:spike times could not be re-aligned for cellbase.';
+            Errors = [Errors,'ExecuteSortingKron:spike times could not be re-aligned for cellbase for tetrode ',num2str(tetrodes_used(t)),'.\n'];
         end
         %save as mat in output folder
         save(fullfile(sortingpathbase,animal,session,'output',strcat('ms2--t',num2str(tetrodes_used(t))),'clusters.mat'),'clusters');

@@ -24,6 +24,9 @@ findfolder = cellfun(@strfind,folders,repmat({date},1,length(folders)),'UniformO
 findfolder = ~cellfun(@isempty,findfolder);
 
 folders_found = folders(findfolder);
+if isempty(folders_found)
+    fprintf('No Sessions found.\n');
+end
 
 for f = 1:length(folders_found)
     
