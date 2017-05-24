@@ -16,21 +16,12 @@ function Tetrode2MDALocal(animal,date,tetrodes,tetrodes_config,sourcepathbase,de
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% find folders
-sourcepath=fullfile(sourcepathbase,animal);
-folders = dir(sourcepath);
-folders = {folders.name};
-findfolder = cellfun(@strfind,folders,repmat({date},1,length(folders)),'UniformOutput',0);
-findfolder = ~cellfun(@isempty,findfolder);
 
-folders_found = folders(findfolder);
-if isempty(folders_found)
-    fprintf('No Sessions found.\n');
-end
+sessions_found = findSessions(sourcepathbase,animal,date);
 
-for f = 1:length(folders_found)
+for f = 1:length(sessions_found)
     
-    fold = folders_found{f};
+    fold = sessions_found{f};
     
     for i = 1:length(tetrodes)
         

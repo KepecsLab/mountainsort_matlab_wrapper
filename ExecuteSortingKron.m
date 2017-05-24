@@ -29,22 +29,16 @@ paramssourcepath = '/home/hoodoo/mountainlab_scripts/params_default_20161201.jso
 curationsourcepath = '/home/hoodoo/mountainlab_scripts/curation_default_20161201.script';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-fullfodatasourcepath = fullfile(datapathbase,animal);
-folders = dir(fullfodatasourcepath);
-folders = {folders.name};
-findfolder = cellfun(@strfind,folders,repmat({date},1,length(folders)),'UniformOutput',0);
-findfolder = ~cellfun(@isempty,findfolder);
-
-folders_found = folders(findfolder);
+sessions_found = findSessions(datapathbase,animal,date);
 
 %start daemon
 mlsystem('mp-set-default-daemon admin');
 mlsystem('mp-daemon-start admin');
 
 Errors = [' '];
-for s = 1:length(folders_found)%sessions of day
+for s = 1:length(sessions_found)%sessions of day
     
-    session = folders_found{s};
+    session = sessions_found{s};
     
     %for each session, create a sorting folder with specs for pipeline and
     %datasets (tetrodes)
