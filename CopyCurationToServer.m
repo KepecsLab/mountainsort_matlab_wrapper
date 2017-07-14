@@ -48,6 +48,19 @@ for a = 1:length(animalfolders)
                                     if exist(fullfile(SERVERBASE,animalfolders{a},sessionfolders{s},'curated',strcat('clusters',num2str(tet),'.mat')),'file')~=2
                                         copyfile(fullfile(DATABASE,animalfolders{a},sessionfolders{s},'output',datasetfolders{t},files{f}),fullfile(SERVERBASE,animalfolders{a},sessionfolders{s},'curated',strcat('clusters',num2str(tet),'.mat')));
                                     end
+                                    % Waveforms file
+                                elseif strcmp(files{f},'waveform')
+                                    if exist(fullfile(SERVERBASE,animalfolders{a},sessionfolders{s},strcat('tetrode',num2str(tet)),files{f}),'file')~=2
+                                        copyfile(fullfile(DATABASE,animalfolders{a},sessionfolders{s},'output',datasetfolders{t},files{f}),fullfile(SERVERBASE,animalfolders{a},sessionfolders{s},'curated',strcat('waveform',num2str(tet),'.mda')));
+                                        copyfile(fullfile(DATABASE,animalfolders{a},sessionfolders{s},'output',datasetfolders{t},files{f}),fullfile(SERVERBASE,animalfolders{a},sessionfolders{s},strcat('tetrode',num2str(tet)),files{f}));
+                                        
+                                    end
+                                elseif strcmp(files{f},'waveforms')
+                                    if exist(fullfile(SERVERBASE,animalfolders{a},sessionfolders{s},strcat('tetrode',num2str(tet)),files{f}),'file')~=2
+                                        copyfile(fullfile(DATABASE,animalfolders{a},sessionfolders{s},'output',datasetfolders{t},files{f}),fullfile(SERVERBASE,animalfolders{a},sessionfolders{s},'curated',strcat('waveform',num2str(tet),'.mda')));
+                                        copyfile(fullfile(DATABASE,animalfolders{a},sessionfolders{s},'output',datasetfolders{t},files{f}),fullfile(SERVERBASE,animalfolders{a},sessionfolders{s},strcat('tetrode',num2str(tet)),files{f}));
+                                        
+                                    end
                                 end
                             end
                         end

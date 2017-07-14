@@ -19,7 +19,7 @@ for s = 1:length(sessions_found)
         tetrode=tetrodes(t);
         %source path to files
         %raw data mda, firings mda, nlx header file
-        firings_path = fullfile(sortingpathbase,animal,session,'output',strcat('ms2--t',num2str(tetrode)));
+        firings_path = fullfile(sortingpathbase,animal,session,'output',strcat('ms3--t',num2str(tetrode)));
         header_path = fullfile(datapathbase,animal,session,strcat('tetrode',num2str(tetrode)));
         
         %mda file firings
@@ -31,7 +31,7 @@ for s = 1:length(sessions_found)
         
         %load firings
         firings = readmda(mda_sorted); %in "samples"
-        events = firings(2,:);
+        events = firings(2,:);events(events<8)=[];
         %load data
         prv = loadjson(prv_file); %in "samples"
         data = readmda(prv.original_path);

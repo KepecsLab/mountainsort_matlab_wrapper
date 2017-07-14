@@ -10,7 +10,7 @@ function ExecuteSortingKron(animal,date,tetrodes,datapathbase,sortingpathbase,se
 %inputs are: animal: subject id, eg P32
 %            data:   session date, eg 2016-08-30 (format as seen)
 %            tetrodes: array of tetrodes to be converted
-%            datasourcepath: path to folder containing recording sessions
+%            datasourcepath: path to folder containing mountainsort_002recording sessions
 
 %dependencies: readmda()
 %              mountainlab software package with
@@ -24,7 +24,7 @@ function ExecuteSortingKron(animal,date,tetrodes,datapathbase,sortingpathbase,se
 
 
 %params file location
-paramssourcepath = '/home/hoodoo/mountainlab_scripts/params_default_20161201.json';
+paramssourcepath = '/home/hoodoo/mountainlab_scripts/params_default_20170710.json';
 %curation script
 curationsourcepath = '/home/hoodoo/mountainlab_scripts/curation_default_20161201.script';
 
@@ -45,7 +45,7 @@ for s = 1:length(sessions_found)%sessions of day
     %pipeline spec
     mkdir(fullfile(sortingpathbase,animal,session));
     pipelines_txt = fopen(fullfile(sortingpathbase,animal,session,'pipelines.txt'),'w');
-    fprintf(pipelines_txt,'ms2 mountainsort_002.pipeline --curation=curation.script --generate_pre=1 --generate_filt=1 \n');
+    fprintf(pipelines_txt,'ms3 ms3.pipeline --curation=curation.script --refractory_period=1.5 --generate_pre=1 --generate_filt=1 --_nodaemon \n');
     fclose(pipelines_txt);
     %datasets spec
     datasets_txt = fopen(fullfile(sortingpathbase,animal,session,'datasets.txt'),'w');
@@ -86,7 +86,7 @@ for s = 1:length(sessions_found)%sessions of day
         t_str = [t_str,'t',num2str(tetrodes_used(t)),','];
     end
     t_str(end)=[];
-    mlsystem(['kron-run ms2 ',t_str],struct('working_dir',fullfile(sortingpathbase,animal,session)));
+    mlsystem(['kron-run ms3 ',t_str],struct('working_dir',fullfile(sortingpathbase,animal,session)));
     
     %convert resuts back to mat
     %There is now a firings.mda in sortingpathbase,session,animal,output,tetrode folder with sorting
@@ -94,7 +94,7 @@ for s = 1:length(sessions_found)%sessions of day
     for t = 1:length(tetrodes_used)    
         sourcefilename = strcat('tetrode',num2str(tetrodes_used(t)),'.mda');
         %convert to matlab array
-        firings = readmda(fullfile(sortingpathbase,animal,session,'output',strcat('ms2--t',num2str(tetrodes_used(t))),'firings.mda'));
+        firings = readmda(fullfile(sortingpathbase,animal,session,'output',strcat('ms3--t',num2str(tetrodes_used(t))),'firings.mda'));
         
         %add original nlx header info
         header = load(fullfile(datapathbase,animal,session,sourcefilename(1:end-4),[sourcefilename(1:end-4),'header.mat']));
@@ -112,7 +112,7 @@ for s = 1:length(sessions_found)%sessions of day
             Errors = [Errors,'ExecuteSortingKron:spike times could not be re-aligned for cellbase for tetrode ',num2str(tetrodes_used(t)),'.\n'];
         end
         %save as mat in output folder
-        save(fullfile(sortingpathbase,animal,session,'output',strcat('ms2--t',num2str(tetrodes_used(t))),'clusters.mat'),'clusters');
+        save(fullfile(sortingpathbase,animal,session,'output',strcat('ms3--t',num2str(tetrodes_used(t))),'clusters.mat'),'clusters');
         
         %save relevant results on server
         mkdir(fullfile(serverpathbase,animal,session,sourcefilename(1:end-4)));

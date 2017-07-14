@@ -29,7 +29,7 @@ for f = 1:length(sessions_found)
         
         rawdatafiles_index = (tet-1)*4+1:tet*4; %default: all 4 tetrodes
         rawdatafiles_index = rawdatafiles_index(tetrodes_config{tetrodes(i)});%adjust for leads to use
-        rawdatapath=fullfile(sourcepath,fold);
+        rawdatapath=fullfile(sourcepathbase,animal,fold);
         rawdatafiles=cell(1,length(rawdatafiles_index));
         
         for k = 1 : length(rawdatafiles_index)
