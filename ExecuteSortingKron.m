@@ -26,7 +26,7 @@ function ExecuteSortingKron(animal,date,tetrodes,datapathbase,sortingpathbase,se
 %params file location
 paramssourcepath = '/home/hoodoo/mountainlab_scripts/params_default_20170710.json';
 %curation script
-curationsourcepath = '/home/hoodoo/mountainlab_scripts/curation_default_20161201.script';
+curationsourcepath = '/home/hoodoo/mountainlab_scripts/annotation.script';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sessions_found = findSessions(datapathbase,animal,date);
@@ -45,12 +45,12 @@ for s = 1:length(sessions_found)%sessions of day
     %pipeline spec
     mkdir(fullfile(sortingpathbase,animal,session));
     pipelines_txt = fopen(fullfile(sortingpathbase,animal,session,'pipelines.txt'),'w');
-    fprintf(pipelines_txt,'ms3 ms3.pipeline --curation=curation.script --refractory_period=1.5 --generate_pre=1 --generate_filt=1 --_nodaemon \n');
+    fprintf(pipelines_txt,'ms3 ms3.pipeline --generate_pre=1 --generate_filt=1 --_nodaemon \n');
     fclose(pipelines_txt);
     %datasets spec
     datasets_txt = fopen(fullfile(sortingpathbase,animal,session,'datasets.txt'),'w');
     %curation script
-    copyfile(curationsourcepath,fullfile(sortingpathbase,animal,session,'curation.script'));
+    copyfile(curationsourcepath,fullfile(sortingpathbase,animal,session,'annotation.script'));
     
     %used tetrodes
     use_tetrode = true(1,length(tetrodes));
@@ -88,13 +88,33 @@ for s = 1:length(sessions_found)%sessions of day
     t_str(end)=[];
     mlsystem(['kron-run ms3 ',t_str],struct('working_dir',fullfile(sortingpathbase,animal,session)));
     
+
+    
     %convert resuts back to mat
     %There is now a firings.mda in sortingpathbase,session,animal,output,tetrode folder with sorting
         %results
-    for t = 1:length(tetrodes_used)    
+    for t = 1:length(tetrodes_used) 
+        
+        dataout=fullfile(sortingpathbase,animal,session,'output',strcat('ms3--t',num2str(tetrodes_used(t))));
+        
+        %run annotation script
+        script_fname=fullfile(sortingpathbase,animal,session,'annotation.script');
+        mp_run_process('mountainsort.run_metrics_script',...
+            struct('metrics',fullfile(dataout,'cluster_metrics.json'),'script',script_fname),...
+            struct('metrics_out',fullfile(dataout,'cluster_metrics_annotated.json')),...
+            struct());
+        
+        %compute waveforms
+        templates_out = fullfile(dataout,'templates.mda');
+        mp_run_process('mountainsort.compute_templates',...
+            struct('timeseries',fullfile(dataout,'filt.mda.prv'), 'firings',fullfile(dataout,'firings.mda')),...
+            struct('templates_out',templates_out),...
+            struct('clip_size',100));
+        
+        
         sourcefilename = strcat('tetrode',num2str(tetrodes_used(t)),'.mda');
         %convert to matlab array
-        firings = readmda(fullfile(sortingpathbase,animal,session,'output',strcat('ms3--t',num2str(tetrodes_used(t))),'firings.mda'));
+        firings = readmda(fullfile(dataout,'firings.mda'));
         
         %add original nlx header info
         header = load(fullfile(datapathbase,animal,session,sourcefilename(1:end-4),[sourcefilename(1:end-4),'header.mat']));
