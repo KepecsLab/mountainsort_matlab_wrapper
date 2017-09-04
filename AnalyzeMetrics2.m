@@ -27,44 +27,43 @@ Metrics = struct('dataset',[],'cluster',[],'metrics',struct(),'tags',cell(1,1));
 ii=0;
 for s= 1:length(AllDatasets)
     dataset=AllDatasets{s};
-    curated_mda = readmda(fullfile(dataset,curated));
-    if ~isempty(curated_mda)
-    curated_clusters=unique(curated_mda(3,:));
     curation_data = loadjson(fullfile(dataset,curationmv2));
     recomputed_data=loadjson(fullfile(dataset,recompute));
-    Cluster = fieldnames(curation_data.cluster_attributes);
-    for c= 1:length(Cluster)
-        clust = str2double(Cluster{c}(3:end)); 
-        att = curation_data.cluster_attributes.(Cluster{c});
-        if isfield(att.metrics,'num_events') && att.metrics.num_events<10%cluster with extrem low nr of events
+    nClust = length(recomputed_data.clusters);
+    if  any(~ismember(cellfun(@(x) x.label,recomputed_data.clusters), cellfun(@(x) str2double(x(3:end)),fieldnames(curation_data.cluster_attributes))'))
+        fprintf('Warning: Recomputed metrics and curation.mv2 do not match for %s.\nDataset skipped.\n',dataset);
+        firings=readmda(fullfile(dataset,'firings.mda'));
+        continue
+    end
+    for c= 1:nClust
+        clust_metrics = recomputed_data.clusters{c}.metrics; %from recomputed
+        clust_label = recomputed_data.clusters{c}.label; %from recomputed
+        if isfield(curation_data.cluster_attributes.(['x_',num2str(clust_label)]),'tags')
+            clust_tags = curation_data.cluster_attributes.(['x_',num2str(clust_label)]).tags; %from curation.mv2
+        else
+            clust_tags=[];
+        end
+        if isfield(clust_metrics,'num_events') && clust_metrics.num_events<10%cluster with extrem low nr of events
             continue
         end
         ii=ii+1;
-        tmp = [recomputed_data.clusters{:}]; rec = [tmp.label]; rec_idx = find(rec==clust);
-        if ~isempty(rec_idx)
-            rec_metrics = fieldnames(recomputed_data.clusters{rec_idx}.metrics);
-            for r = 1:length(rec_metrics)
-                att.metrics.(rec_metrics{r}) = recomputed_data.clusters{rec_idx}.metrics.(rec_metrics{r});
-            end
-        else
-            rec_metrics = fieldnames(recomputed_data.clusters{1}.metrics);
-            for r = 1:length(rec_metrics)
-                att.metrics.(rec_metrics{r}) = NaN;
-            end
-        end
+        
+        %add metrics
         Metrics.dataset{ii}=dataset;
-        Metrics.cluster(ii) = clust;
-        ffprevious = fieldnames(Metrics.metrics);for f =  1:length(ffprevious), if ~isfield(att.metrics,ffprevious{f}), att.metrics.(ffprevious{f})=NaN; end,end
-        ff = fieldnames(att.metrics); for f =  1:length(ff), if ~isfield(Metrics.metrics,ff{f}),Metrics.metrics.(ff{f})(1:ii)=NaN; end, Metrics.metrics.(ff{f})(ii)=att.metrics.(ff{f});  end
-
-        if ~isfield(att,'tags') || isempty(att.tags)
+        Metrics.cluster(ii) = clust_label;
+        ff = fieldnames(clust_metrics);
+        for f =  1:length(ff)
+           Metrics.metrics.(ff{f})(ii)=clust_metrics.(ff{f});
+        end
+        
+        %tags & determine rejected
+        if isempty(clust_tags)
             Metrics.rejected(ii) = false;
             Metrics.tags{ii} = [];
         else
-            Metrics.rejected(ii) = any(cellfun(@strcmp,att.tags,repmat({'rejected'},1,length(att.tags))));
-            Metrics.tags{ii} = att.tags;
+            Metrics.rejected(ii) = any(cellfun(@strcmp,clust_tags,repmat({'rejected'},1,length(clust_tags))));
+            Metrics.tags{ii} = clust_tags;
         end
-    end
     end
 end
 
@@ -72,6 +71,7 @@ figure
 noise_overlap = Metrics.metrics.noise_overlap;
 completeness1 = Metrics.metrics.completeness1;
 isolation = Metrics.metrics.isolation;
+p_ref=Metrics.metrics.p_refractory;
 l_ratio = Metrics.metrics.l_ratio;
 id = Metrics.metrics.isolation_distance;
 accepted = ~Metrics.rejected;
@@ -79,17 +79,39 @@ subplot(1,2,1)
 hold on
 plot (noise_overlap(accepted),isolation(accepted),'ok')
 plot (noise_overlap(~accepted),isolation(~accepted),'or')
+ylim([0.8,1]);xlim([0,0.2])
 subplot(1,2,2)
 hold on
 plot (l_ratio(accepted),id(accepted),'ok')
 plot (l_ratio(~accepted),id(~accepted),'or')
 % xlim([0,20]),ylim([0,50])
+figure
+subplot(1,2,1)
+plot3(noise_overlap(accepted),isolation(accepted),completeness1(accepted),'ok')
+hold on
+plot3 (noise_overlap(~accepted),isolation(~accepted),completeness1(~accepted),'or')
+xlabel('noise_ov');ylabel('iso');zlabel('comp1')
+view(2)
+subplot(1,2,2)
+plot3(noise_overlap(accepted),isolation(accepted),p_ref(accepted),'ok')
+hold on
+plot3 (noise_overlap(~accepted),isolation(~accepted),p_ref(~accepted),'or')
+xlabel('noise_ov');ylabel('iso');zlabel('pref')
+view(2)
 
-
-%% DISCARD METERICS
+figure
+subplot(1,2,1)
+boxplot(l_ratio,accepted,'ExtremeMode','clip')
+ylim([-2,8])
+xlabel('l-ratio');set(gca,'XtickLabel',{'rej','acc'});
+subplot(1,2,2)
+boxplot(id,accepted,'ExtremeMode','clip')
+ylim([0,50])
+xlabel('iso dist');set(gca,'XtickLabel',{'rej','acc'});
+%% INCLUDE METERICS
 ff = fieldnames(Metrics.metrics); 
-include_metrics = {'SNR','isolation','noise_overlap','peak_amp','peak_noise','l_ratio','isolation_distance','p_refractory','completeness1','completeness2'};
-ffname=           {'SNR','iso',      'noise-ov',     'amp',     'noise',     'l-ratio','id',                'p-ref',       'comp1',        'comp2'}; %MANUAL
+include_metrics = {'peak_snr','isolation','noise_overlap','l_ratio','isolation_distance','p_refractory','completeness1'};
+ffname=           {'SNR','iso',      'noise-ov',          'l-ratio','id',                'p-ref',       'comp'}; %MANUAL
 % include_metrics={'SNR','p_refractory'};
 % ffname=           {'peak_amp','p_refractory'};
 idx=[];
@@ -140,6 +162,7 @@ ff2=cellfun(@(x) replace(x,'_','-'),ff,'UniformOutput',0);
 labels = cellfun(@(x) [x(1:min(length(x),3)),'-',x(max(1,end-3):end)],ff2,'UniformOutput',0);
 set(gca,'XTickLabel',sortname)
 set(gca,'YTicklabel',sortname)
+RedoTicks(gcf)
 % subplot(1,2,2)
 % imagesc(abs(Cin)); colorbar()
 % set(gca,'YDir','normal')
@@ -149,6 +172,19 @@ set(gca,'YTicklabel',sortname)
 % set(gca,'YTicklabel',ff)
 
 %lda
+acc=[];
+weights=[];
+% for i =1:100
+% split=randperm(size(D,1),ceil(size(D,1)/2));
+% split2=setxor(1:size(D,1),split);
+% D1=D(split,:);
+% D2=D(split2,:);
+% lda = fitcdiscr(D1,accepted(split)');
+% [pred_c] = predict(lda,D2);
+% acc(i) = mean(pred_c==accepted(split2)');
+% weights(:,i)=lda.Coeffs(2,1).Linear;
+% end
+% figure,hist(acc,10);
 lda = fitcdiscr(D,accepted');
 [pred_c] = predict(lda,D);
 acc = mean(pred_c==accepted');
@@ -157,6 +193,7 @@ cr = mean(pred_c(~accepted)==accepted(~accepted)');
 miss = 1-hit;
 fa=1-cr;
 % acc = 1-kfoldLoss(lda);
+
 
 weights=lda.Coeffs(2,1).Linear;
 figure(barplots)
@@ -169,9 +206,10 @@ ylabel('coeff')
 
 %% reduce metric test
 ff = fieldnames(Metrics.metrics); 
-include_metrics = {'SNR','isolation','noise_overlap','peak_amp','peak_noise','l_ratio','isolation_distance','p_refractory','completeness1','completeness2'};
-ffname=           {'SNR','iso',      'noise-ov',     'amp',     'noise',     'l-ratio','id',                'p-ref',       'comp1',        'comp2'}; %MANUAL
+include_metrics = {'SNR','isolation','noise_overlap','l_ratio','isolation_distance','p_refractory','completeness1'};
+ffname=           {'SNR','iso',      'noise-ov',      'l-ratio','id',                'p-ref',       'comp'}; %MANUAL
 subsets = nchoosek(1:length(include_metrics),3);
+acc=[];
 for k =1:size(subsets,1)
 include_me=include_metrics(subsets(k,:));
 ffn=           ffname(subsets(k,:));
@@ -198,4 +236,53 @@ end
 [~,sortidx]=sort(acc);
 figure,
 plot(acc(sortidx),'k')
+xlabel('triplet')
+ylabel('accuracy')
 
+best_subsets=subsets(sortidx,:);
+for i =1:5
+ffname(best_subsets(end-i+1,:))
+end
+
+figure
+subplot(1,2,1)
+hold on
+plot (noise_overlap(~accepted),isolation(~accepted),'.k')
+plot(noise_overlap(accepted),isolation(accepted),'.r')
+
+xlabel('noise-overlap');ylabel('isolation');
+subplot(1,2,2)
+hold on
+plot(noise_overlap(accepted),isolation(accepted),'.r')
+plot (noise_overlap(~accepted),isolation(~accepted),'.k')
+
+xlabel('noise-overlap');ylabel('isolation');
+xlim([0,0.1]); ylim([0.85,1]);
+RedoTicks(gcf)
+
+figure
+subplot(1,2,1)
+hold on
+plot3(noise_overlap(accepted),isolation(accepted),completeness1(accepted),'.r')
+plot3 (noise_overlap(~accepted),isolation(~accepted),completeness1(~accepted),'.k')
+xlabel('noise-overlap');ylabel('isolation');zlabel('completeness')
+xlim([0,0.1]); ylim([0.85,1]);zlim([0.8,1])
+view(2)
+subplot(1,2,2)
+hold on
+plot3(noise_overlap(accepted),isolation(accepted),completeness1(accepted),'.r')
+plot3 (noise_overlap(~accepted),isolation(~accepted),completeness1(~accepted),'.k')
+xlabel('noise-overlap');ylabel('isolation');zlabel('completeness')
+xlim([0,0.1]); ylim([0.85,1]);zlim([0.8,1])
+view(2)
+RedoTicks(gcf)
+
+% subplot(2,2,4)
+% hold on
+% plot3(noise_overlap(accepted),isolation(accepted),completeness1(accepted),'.r')
+% plot3 (noise_overlap(~accepted),isolation(~accepted),completeness1(~accepted),'.k')
+% xlabel('noise-overlap');ylabel('isolation');zlabel('completeness')
+% view(2)
+% xlim([0,0.1]); ylim([0.85,1]);zlim([0.8,1])
+% set(gca,'ZDir','reverse')
+RedoTicks(gcf)

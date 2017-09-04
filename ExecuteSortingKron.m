@@ -131,6 +131,13 @@ for s = 1:length(sessions_found)%sessions of day
             clusters.firings_cellbase = 'ExecuteSortingKron:spike times could not be re-aligned for cellbase.';
             Errors = [Errors,'ExecuteSortingKron:spike times could not be re-aligned for cellbase for tetrode ',num2str(tetrodes_used(t)),'.\n'];
         end
+        
+        %conversion to seconds
+        inRecord = mod( clusters.firings(2,:),clusters.header(1).NSample);
+        iRecord = floor( clusters.firings(2,:)./clusters.header(1).NSample)+1;
+        NewSpikes = clusters.header(1).TimeStamps(iRecord)*10^-6 + inRecord/clusters.header(1).SampleFreq;
+        clusters.firings_seconds = NewSpikes;
+        
         %save as mat in output folder
         save(fullfile(sortingpathbase,animal,session,'output',strcat('ms3--t',num2str(tetrodes_used(t))),'clusters.mat'),'clusters');
         

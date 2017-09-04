@@ -42,15 +42,16 @@ end
 %main loop through datasets
 for s = 1:length(AllDatasets)
     if ~isFinished(AllDatasets{s},{finished.datasets})
+        dataset=AllDatasets{s};
         
         %firings
-        firings = fullfile(AllDatasets{s},'firings.mda');
+        firings = fullfile(dataset,'firings.mda');
         
         %timeseries raw
-        timeseries_raw=loadjson(fullfile(AllDatasets{s},'raw.mda.prv')); timeseries_raw=timeseries_raw.original_path;
+        timeseries_raw=loadjson(fullfile(dataset,'raw.mda.prv')); timeseries_raw=timeseries_raw.original_path;
         %if not at original path anymore, use prv file (slower)
         if exist(timeseries_raw,'file')~=2
-            timeseries_raw = fullfile(AllDatasets{s},'raw.mda.prv');
+            timeseries_raw = fullfile(dataset,'raw.mda.prv');
         end
         
         %make filtered timeseries
@@ -109,7 +110,7 @@ for s = 1:length(AllDatasets)
         %save which dataets have been recomputed
         idx = length(finished);
         finished(idx+1).datasets=AllDatasets{s};
-        finished(idx+1).processors=finished_processors;
+        finished(idx+1).processors=metrics_list;
         save(fullfile(tempfolderbase,OutName,'finished.mat'),'finished');
     end
 end
