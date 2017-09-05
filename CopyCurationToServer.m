@@ -5,6 +5,9 @@
 %        - firings.curated.mda (curated firings only containing accepted
 %           clusters)
 %        - waveform*.* (mda-file containing waveform templates)
+%        - cluster.mat file (output from ExecuteSortingKron) containing
+%           header info and firings.mda in matlab readable format, and
+%           timestamps converted to seconds and in cellbase format
 
 %script to copy curated firing.mda and mvs2 files back to server
 
@@ -14,7 +17,7 @@ DATABASE = '/home/hoodoo/mountainsort/';
 SERVERBASE = '/media/confidence/Data/';
 %assumes animal folders in DATABASE containing session folders containing
 %standard kron folder structure with an output folder containing datasets
-%and same structure on SERBERVASE
+%and same structure on SERBERVASEMClust
 
 %%%%%%
 animalfolders = dir(DATABASE);animalfolders={animalfolders.name};
