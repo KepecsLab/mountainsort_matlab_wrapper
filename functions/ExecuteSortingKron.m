@@ -1,34 +1,40 @@
-function ExecuteSortingKron(animal,date,tetrodes,datapathbase,sortingpathbase,serverpathbase)
-% ExecuteSorting()
+function ExecuteSortingKron(Params)
+% ExecuteSorting(...)
 
-% 1) runs clustering pipeline on server
-% 2) saves clustering result on data server
+% 1) runs clustering pipeline 
+% 2) saves clustering result 
 % 3) converts clustering results back to matlab array and combined with
 %    original header info, also converts event timestamps from neuralynx
-%    (us) in cellbase times (has to add offset and divide by 10e4)
+%    (us) in seconds and cellbase times (has to add offset and divide by 10e4)
 
-%inputs are: animal: subject id, eg P32
-%            data:   session date, eg 2016-08-30 (format as seen)
-%            tetrodes: array of tetrodes to be converted
-%            datasourcepath: path to folder containing mountainsort_002recording sessions
+%inputs are: A struct PARAMS with required fields
+%            Animal: subject id, eg P32
+%            Date:   session date, eg 2016-08-30 (format as seen)
+%            Tetrodes: array of tetrodes to be converted
+%            ServerPathBase: path to folder containing recording sessions
+%                            (server recommended)
+%            DataPathBase: path to folder where converted files will be
+%                            stored (local recommended)
+%            SortingPathBase: path to folder where clustering results are
+%                              stored (local recommended)
+%                          
 
 %dependencies: readmda()
 %              mountainlab software package with
-%                        params file, specify location here
-%                        script file, specify location here
-%                        view_results script file, specify location here
 
-
-
-
-
-
-%params file location
-paramssourcepath = '/home/hoodoo/mountainlab_scripts/params_default_20170710.json';
-%curation script
-curationsourcepath = '/home/hoodoo/mountainlab_scripts/annotation.script';
+% Torben Ott, CSHL, September 2017
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+animal = Params.Animal;
+date = Params.Date;
+tetrodes=Params.Tetrodes;
+serverpathbase=Params.ServerPathBase;
+datapathbase = Params.DataPathBase;
+sortingpathbase = Params.SortingPathBase;
+paramssourcepath = Params.ParamsPath;
+curationsourcepath = Params.CurationPath;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 sessions_found = findSessions(datapathbase,animal,date);
 
 %start daemon

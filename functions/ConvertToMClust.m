@@ -1,15 +1,28 @@
-%extracts Waveforms from mda-file (mountainlab) and creates MClust cluster readable
-%tetrode data file and MClust cluster objects
+function ConvertToMClust(Params)
+%ConvertToMClust(...) extracts waveform clipts from mda-file (mountainlab) and creates MClust cluster readable
+%tetrode data file and MClust cluster objects. % to load data in MClust, loading engine LoadTT_mda() is required.
 
-% path to DATA.mda file, firings.mda file, and header file containng
-% timestamp information is required.
+%inputs are: A struct PARAMS with required fields
+%            Animal: subject id, eg P32
+%            Date:   session date, eg 2016-08-30 (format as seen)
+%            Tetrodes: array of tetrodes to be converted
+%            DataPathBase: path to folder where converted files will be
+%                            stored (local recommended)
+%            SortingPathBase: path to folder where clustering results are
+%                              stored (local recommended)
+%                          
 
-%to load data in MClust, loading engine LoadTT_mda() is required
 
 %Torben Ott, CSHL, 2017
 %tott@cshl.edu
 
-function ConvertToMClust(animal,date,tetrodes,datapathbase,sortingpathbase)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+animal = Params.Animal;
+date = Params.Date;
+tetrodes=Params.Tetrodes;
+datapathbase = Params.DataPathBase;
+sortingpathbase = Params.SortingPathBase;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 sessions_found = findSessions(datapathbase,animal,date);
 for s = 1:length(sessions_found)
