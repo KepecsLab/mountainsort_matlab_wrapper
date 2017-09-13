@@ -1,0 +1,98 @@
+function main(obj) {
+
+    var clusters=load_clusters(obj);
+    console.log('Number of clusters: '+clusters.length);
+
+    var max_noise_overlap=0.05;
+    var min_isolation=0.96;
+    var min_snr=3;
+    var min_firing_rate=0.1; //Hz
+    var max_p_refractory=0.1; //percent
+    var min_completeness1=0.99; //fraction of 1
+    
+    for (var i in clusters) {
+    	var C=clusters[i];
+        C.removeTag('rejected');
+        C.removeTag('noise_overlap');
+        C.removeTag('low_isolation');
+        C.removeTag('low_snr');
+        C.removeTag('low_firing_rate');
+
+        if (C.metric('noise_overlap')>max_noise_overlap) {
+        	console.log('High noise overlap: '+C.label());
+        	C.addTag('rejected');
+        	C.addTag('noise_overlap');
+        }
+        if (C.metric('isolation')<min_isolation) {
+        	console.log('Low isolation: '+C.label());
+        	//C.addTag('rejected');
+        	C.addTag('low_isolation');
+        }
+        if (C.metric('peak_snr')<min_snr) {
+        	console.log('Low snr: '+C.label());
+        	C.addTag('rejected');
+        	C.addTag('low_snr');
+        }
+        if (C.metric('firing_rate')<min_firing_rate) {
+        	console.log('Low firing rate: '+C.label());
+        	C.addTag('rejected');
+        	C.addTag('low_firing_rate');
+        }
+        if (C.metric('completeness1')<min_completeness1) {
+        	console.log('Low completeness1: '+C.label());
+        	//C.addTag('rejected');
+        	C.addTag('low_completeness1');
+        }
+        if (C.metric('p_refractory')>max_p_refractory) {
+        	console.log('High p_refractory: '+C.label());
+        	//C.addTag('rejected');
+        	C.addTag('high_p_refractory');
+        }
+    }
+}
+
+function Cluster(obj) {
+    var that=this;
+    obj.metrics=obj.metrics||{};
+    obj.tags=obj.tags||[];
+    this.k=function() {
+        return obj.label||0;
+    }
+    this.label=function() {
+        return obj.label||0;
+    }
+    this.hasTag=function(tag) {
+        for (var j in obj.tags) {
+            if (obj.tags[j]==tag) return true;
+        }
+        return false;
+    }
+    this.addTag=function(tag) {
+        if (that.hasTag(tag)) return;
+        obj.tags.push(tag);
+    }
+    this.removeTag=function(tag) {
+        var new_tags=[];
+        for (var j in obj.tags) {
+            if (obj.tags[j]!=tag) {
+                new_tags=obj.tags[j];
+            }
+            obj.tags=new_tags;
+        }
+    }
+    this.metric=function(name) {
+        return obj.metrics[name]||0;
+    }
+    this.setMetric=function(name,val) {
+        obj.metrics[name]=val;
+    }
+}
+
+function load_clusters(obj) {
+    var list=obj.clusters||[];
+    var ret=[];
+    for (var i in list) {
+        ret.push(new Cluster(list[i]));
+    }
+    return ret;
+}

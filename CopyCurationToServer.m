@@ -1,23 +1,30 @@
-%Script to copy clustering results to server.
+%Script to copy clustering results to server with ame folder structure
 
 % copies - *.mv2 files (containing clustering annotations and metrics)
 %        - firings.mda (original mountainlab clustering output)
 %        - firings.curated.mda (curated firings only containing accepted
 %           clusters)
-%        - waveform*.* (mda-file containing waveform templates)
-%        - cluster.mat file (output from ExecuteSortingKron) containing
+%        - waveform* (mda-file containing waveform templates)
+%        - clusters.mat file (output from ExecuteSortingKron) containing
 %           header info and firings.mda in matlab readable format, and
 %           timestamps converted to seconds and in cellbase format
+%        - TTData folder (created by CreateTT.mat)
 
 %script to copy curated firing.mda and mvs2 files back to server
-
-%Torben Ott, CSHL, 2017
-
-DATABASE = '/home/hoodoo/mountainsort/';
-SERVERBASE = '/media/confidence/Data/';
 %assumes animal folders in DATABASE containing session folders containing
 %standard kron folder structure with an output folder containing datasets
 %and same structure on SERBERVASEMClust
+
+%Torben Ott, CSHL, 2017
+
+%%%%%%%%%% USER %%%%%%%%%%%%%%%%%%%%
+DATABASE = '/home/hoodoo/mountainsort/';
+SERVERBASE = '/media/confidence/Data/';
+% CopyCond = [1,1,1,1,1,1];
+CopyCond = [0,0,0,0,0,1];
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 
 %%%%%%
 animalfolders = dir(DATABASE);animalfolders={animalfolders.name};

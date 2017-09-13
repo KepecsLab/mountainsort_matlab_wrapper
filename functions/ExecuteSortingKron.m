@@ -49,7 +49,9 @@ for s = 1:length(sessions_found)%sessions of day
     %for each session, create a sorting folder with specs for pipeline and
     %datasets (tetrodes)
     %pipeline spec
-    mkdir(fullfile(sortingpathbase,animal,session));
+    if ~isdir(fullfile(sortingpathbase,animal,session))
+        mkdir(fullfile(sortingpathbase,animal,session));
+    end
     pipelines_txt = fopen(fullfile(sortingpathbase,animal,session,'pipelines.txt'),'w');
     fprintf(pipelines_txt,'ms3 ms3.pipeline --generate_pre=1 --generate_filt=1 --_nodaemon \n');
     fclose(pipelines_txt);
@@ -75,7 +77,9 @@ for s = 1:length(sessions_found)%sessions of day
         end
         
         %create dataset folder, copy default params and create entry for dataset
-        mkdir(fullfile(sortingpathbase,animal,session,'datasets',sourcefilename(1:end-4)));
+        if ~isdir(fullfile(sortingpathbase,animal,session,'datasets',sourcefilename(1:end-4)))
+            mkdir(fullfile(sortingpathbase,animal,session,'datasets',sourcefilename(1:end-4)));
+        end
         paramsdestpath = fullfile(sortingpathbase,animal,session,'datasets',sourcefilename(1:end-4),'params.json');
         copyfile(paramssourcepath,paramsdestpath);
         fprintf(datasets_txt,['t', num2str(tet),' datasets/tetrode',num2str(tet),' --_iff=',session,'\n']);
@@ -148,9 +152,15 @@ for s = 1:length(sessions_found)%sessions of day
         save(fullfile(sortingpathbase,animal,session,'output',strcat('ms3--t',num2str(tetrodes_used(t))),'clusters.mat'),'clusters');
         
         %save relevant results on server
-        mkdir(fullfile(serverpathbase,animal,session,sourcefilename(1:end-4)));
-        save(fullfile(serverpathbase,animal,session,sourcefilename(1:end-4),'clusters.mat'),'clusters');
-        save(fullfile(serverpathbase,animal,session,sourcefilename(1:end-4),'header.mat'),'header');
+        if ~isdir(fullfile(serverpathbase,animal,session,sourcefilename(1:end-4)))
+            mkdir(fullfile(serverpathbase,animal,session,sourcefilename(1:end-4)));
+        end
+        try
+            save(fullfile(serverpathbase,animal,session,sourcefilename(1:end-4),'clusters.mat'),'clusters');
+            save(fullfile(serverpathbase,animal,session,sourcefilename(1:end-4),'header.mat'),'header');
+        catch
+            ('WARNING: ExecuteSortingKron: Copying files to server failed.\n');
+        end
     end 
     
 end%sessions

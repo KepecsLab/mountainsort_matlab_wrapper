@@ -4,18 +4,18 @@
 % Torben Ott, CSHL, 2017
 
 %%%%%PARAMS%%%%%%%%%%%%%
-Animals = {'P37'};
-Dates = {'2016-11-15'};%for multiple sessions, Animals must be of same length
-Tetrodes={[15]}; %which tetrodes to include, cell of same length as Animals and Dates
-Notify={'Torben'}; %cell with names; names need to be associated with email in MailAlert.m
+Animals = {'T37'};
+Dates = {'2016-10-31'};%for multiple sessions, Animals must be of same length
+Tetrodes={[1:16]}; %which tetrodes to include, cell of same length as Animals and Dates
+Notify={'Torben','Paul'}; %cell with names; names need to be associated with email in MailAlert.m
 ServerPathBase =  '/media/confidence/Data/';% source path to nlx files
-DataPathBase = '/media/hoodoo/Data/Animals/'; %where to store mda files (big files). recommend HDD.
+DataPathBase = '/hdd/Data/Paul/'; %where to store mda files (big files). recommend HDD.
 SortingPathBase = '/home/hoodoo/mountainsort/'; %where to store mountainlab sorting results (small(er) files). recommend SSD.
-ParamsPath = '/home/hoodoo/mountainlab_scripts/params_default_20170710.json'; %default params file location
-CurationPath = '/home/hoodoo/mountainlab_scripts/annotation.script'; %default curation script location
-Convert2MDA = true; %if set to false, uses converted mda file if present
+ParamsPath = '/home/hoodoo/Documents/MATLAB/mountainsort_matlab_wrapper/params/params_default_20170710.json'; %default params file location
+CurationPath = '/home/hoodoo/Documents/MATLAB/mountainsort_matlab_wrapper/params/annotation.script'; %default curation script location
+Convert2MDA = false; %if set to false, uses converted mda file if present
 RunClustering = true; %if set to false, does not run clustering
-Convert2MClst = false; %if set to false, does not convert to MClust readable cluster file (large!)
+Convert2MClust = false; %if set to false, does not convert to MClust readable cluster file (large!)
 %%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -48,14 +48,14 @@ for session = 1:length(Animals)
         case 'P35'
             load('P35Config.mat');
         otherwise
-            warning('No animal config file found. Using all leads of all tetrodes.\n');
+            warning('No animal config file found. Using all leads of all tetrodes.');
     end
     
     %build params struct
     Params.Date = date;
     Params.Animal = animal;
     Params.Tetrodes = tetrodes;
-    Params.TetrodesConfig = tetrode_config;
+    Params.TetrodesConfig = tetrodes_config;
     Params.ServerPathBase = ServerPathBase;
     Params.DataPathBase = DataPathBase;
     Params.SortingPathBase = SortingPathBase;
@@ -78,7 +78,7 @@ for session = 1:length(Animals)
     if RunClustering
         tic
         try
-            ExecuteSortingKron(animal,date,tetrodes,DataPathBase,SortingPathBase,ServerPathBase);
+            ExecuteSortingKron(Params);
         catch
             MailAlert(Notify,'Hoodoo:SortingWrapperKron','Error:ExecuteSortingKron.');
         end

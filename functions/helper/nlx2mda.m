@@ -100,7 +100,7 @@ save(fullfile(pathnamesave,[filesave(1:end-4),'header.mat']),'header')
 logtxt = fopen(fullfile(pathnamesave,'log.txt'),'w');
 fprintf(logtxt,cell2mat(log),pathnamesave);
 fclose(logtxt);
-fprintf('Converted %s.\n',fullfile(pathnamesave,filesave));
+fprintf('Done.\n',fullfile(pathnamesave,filesave));
 
 end
 

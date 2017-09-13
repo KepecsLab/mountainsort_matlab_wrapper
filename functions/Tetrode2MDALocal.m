@@ -56,9 +56,15 @@ for f = 1:length(sessions_found)
         
         %file destination
         destinationpath = fullfile(datapathbase,animal,fold,['tetrode',num2str(tet)]);
-        mkdir(destinationpath);
+        if ~isdir(destinationpath)
+            mkdir(destinationpath);
+        end
         destinationfile = strcat('tetrode',num2str(tet),'.mda');
+        if exist(fullfile(destinationpath,destinationfile),'file')==2
+            fprintf('WARNING: Converted mda-file %s already exists. Will overwrite.\n',fullfile(destinationpath,destinationfile));
+        end
         
+        fprintf('Converting to destination file %s...',fullfile(destinationpath,destinationfile));
         nlx2mda(rawdatapath,rawdatafiles,destinationpath,destinationfile);
         
     end%tetrodes
