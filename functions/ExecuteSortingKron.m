@@ -151,16 +151,16 @@ for s = 1:length(sessions_found)%sessions of day
         %save as mat in output folder
         save(fullfile(sortingpathbase,animal,session,'output',strcat('ms3--t',num2str(tetrodes_used(t))),'clusters.mat'),'clusters');
         
-        %save relevant results on server
-        if ~isdir(fullfile(serverpathbase,animal,session,sourcefilename(1:end-4)))
-            mkdir(fullfile(serverpathbase,animal,session,sourcefilename(1:end-4)));
-        end
-        try
-            save(fullfile(serverpathbase,animal,session,sourcefilename(1:end-4),'clusters.mat'),'clusters');
-            save(fullfile(serverpathbase,animal,session,sourcefilename(1:end-4),'header.mat'),'header');
-        catch
-            ('WARNING: ExecuteSortingKron: Copying files to server failed.\n');
-        end
+%         %save relevant results on server
+%         if ~isdir(fullfile(serverpathbase,animal,session,sourcefilename(1:end-4)))
+%             mkdir(fullfile(serverpathbase,animal,session,sourcefilename(1:end-4)));
+%         end
+%         try
+%             save(fullfile(serverpathbase,animal,session,sourcefilename(1:end-4),'clusters.mat'),'clusters');
+%             save(fullfile(serverpathbase,animal,session,sourcefilename(1:end-4),'header.mat'),'header');
+%         catch
+%             ('WARNING: ExecuteSortingKron: Copying files to server failed.\n');
+%         end
     end 
     
 end%sessions
