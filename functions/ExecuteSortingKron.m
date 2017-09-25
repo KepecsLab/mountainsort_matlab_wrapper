@@ -91,7 +91,7 @@ for s = 1:length(sessions_found)%sessions of day
         end
         paramsdestpath = fullfile(sortingpathbase,animal,session,'datasets',sourcefilename(1:end-4),'params.json');
         copyfile(paramssourcepath,paramsdestpath);
-        fprintf(datasets_txt,['t', num2str(tet),' datasets/tetrode',num2str(tet),' --_iff=',session,'\n']);
+        fprintf(datasets_txt,['t', num2str(tet),' datasets/',sourcefilename(1:end-4),' --_iff=',session,'\n']);
         %create prv for raw file
         mlsystem(['prv-create ',sourcefilefull,' ',fullfile(sortingpathbase,animal,session,'datasets',sourcefilename(1:end-4),'raw.mda.prv')]);   
 
