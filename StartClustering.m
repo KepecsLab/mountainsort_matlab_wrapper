@@ -4,18 +4,19 @@
 % Torben Ott, CSHL, 2017
 
 %%%%%PARAMS%%%%%%%%%%%%%
-Animals = {'T37'};
-Dates = {'2016-10-31'};%for multiple sessions, Animals must be of same length
-Tetrodes={[1:16]}; %which tetrodes to include, cell of same length as Animals and Dates
-Notify={'Torben','Paul'}; %cell with names; names need to be associated with email in MailAlert.m
-ServerPathBase =  '/media/confidence/Data/';% source path to nlx files
-DataPathBase = '/hdd/Data/Paul/'; %where to store mda files (big files). recommend HDD.
-SortingPathBase = '/home/hoodoo/mountainsort/'; %where to store mountainlab sorting results (small(er) files). recommend SSD.
-ParamsPath = '/home/hoodoo/Documents/MATLAB/mountainsort_matlab_wrapper/params/params_default_20170710.json'; %default params file location
-CurationPath = '/home/hoodoo/Documents/MATLAB/mountainsort_matlab_wrapper/params/annotation.script'; %default curation script location
+Animals = {'TG020'};
+Dates = {'20170921'};%for multiple sessions, Animals must be of same length
+Tetrodes={[1:32]}; %which tetrodes to include, cell of same length as Animals and Dates
+Notify={'Thiago'}; %cell with names; names need to be associated with email in MailAlert.m
+ServerPathBase =  '/media/thiagoatserver/Neurodata/Spikegadgets';% path to original recording files
+DataPathBase = '/home/thiago/Neurodata/Spikegadgets'; % where to store big mda files. recommend HDD.
+SortingPathBase = '/shorthand/Neurodata/mountainsort/'; %where to store mountainlab sorting results (small(er) files). recommend SSD.
+ParamsPath = '/home/thiago/Documents/Matlab/mountainsort_matlab_wrapper/params/params_default_20170710.json'; %default params file location
+CurationPath = '/home/thiago/Documents/Matlab/mountainsort_matlab_wrapper/params/annotation.script'; %default curation script location
 Convert2MDA = false; %if set to false, uses converted mda file if present
 RunClustering = true; %if set to false, does not run clustering
 Convert2MClust = false; %if set to false, does not convert to MClust readable cluster file (large!)
+RecSys = 'spikegadgets'; %recording system. either 'neuralynx' or 'spikegadgets'
 %%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -36,11 +37,11 @@ for session = 1:length(Animals)
     animal = Animals{session};
     date = Dates{session};
     tetrodes = Tetrodes{session};
-    
+
     %which leads to use
     %default: all 4
     tetrodes_config = num2cell(repmat(1:4,tetrodes(end),1),2);
-    
+
     %load animal-specific config file
     switch animal
         case 'P36'
@@ -50,7 +51,7 @@ for session = 1:length(Animals)
         otherwise
             warning('No animal config file found. Using all leads of all tetrodes.');
     end
-    
+
     %build params struct
     Params.Date = date;
     Params.Animal = animal;
@@ -61,7 +62,8 @@ for session = 1:length(Animals)
     Params.SortingPathBase = SortingPathBase;
     Params.ParamsPath = ParamsPath;
     Params.CurationPath = CurationPath;
-    
+    Params.RecSys = RecSys;
+
     % convert ncs to mda
     if Convert2MDA
         tic
@@ -72,8 +74,8 @@ for session = 1:length(Animals)
         end
         EXTRACTTIME(session) = toc;
     end
-    
-    
+
+
     % start analysis pipeline
     if RunClustering
         tic
@@ -84,8 +86,8 @@ for session = 1:length(Animals)
         end
         SORTINGTIME(session) = toc;
     end
-    
-    
+
+
     % convert to  MClust tetrode data and cluster object
     if Convert2MClust
         tic
@@ -96,7 +98,7 @@ for session = 1:length(Animals)
         end
         MCLUSTCONVERTTIME(session) = toc;
     end
-    
+
 end%session
 
 TIME = sum((EXTRACTTIME + SORTINGTIME + MCLUSTCONVERTTIME))/60;
@@ -108,5 +110,3 @@ save('MCLUSTCONVERTTIME.mat','MCLUSTCONVERTTIME');
 
 %send slack notification
 MailAlert(Notify,'Hoodoo:SortingWrapperKron','Sorting Done.');
-
-

@@ -33,6 +33,7 @@ datapathbase = Params.DataPathBase;
 sortingpathbase = Params.SortingPathBase;
 paramssourcepath = Params.ParamsPath;
 curationsourcepath = Params.CurationPath;
+recsys = Params.RecSys;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 sessions_found = findSessions(datapathbase,animal,date);
@@ -66,8 +67,16 @@ for s = 1:length(sessions_found)%sessions of day
     for t = 1:length(tetrodes)%tetrodes in session of day
         
         tet = tetrodes(t);
-        sourcefilename = strcat('tetrode',num2str(tet),'.mda');
-        sourcefilepath = fullfile(datapathbase,animal,session,sourcefilename(1:end-4));
+        switch recsys
+            case 'neuralynx'
+                sourcefilename = strcat('tetrode',num2str(tet),'.mda');
+                sourcefilepath = fullfile(datapathbase,animal,session,sourcefilename(1:end-4));
+            case 'spikegadgets'
+                ndx = regexp(session,'.mda');
+                sourcefilename = strcat(session(1:ndx-1),'.nt',num2str(tet),'.mda');
+                sourcefilepath = fullfile(datapathbase,animal,session);
+        end%switch 
+        
         sourcefilefull = fullfile(sourcefilepath,sourcefilename);
         
         if exist(sourcefilefull,'file')~=2
