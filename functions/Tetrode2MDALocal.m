@@ -41,7 +41,7 @@ for f = 1:length(sessions_found)
           mlsystem(str,opts)
         catch
           error('Make sure exportmda function is on bash path. Download function from Trodes bitbucket repository to a local directory, then add that directory to your ~/.profile file')
-        end_try_catch       
+        end%try_catch       
       case 'neuralynx'
         for i = 1:length(tetrodes)
             
@@ -78,5 +78,5 @@ for f = 1:length(sessions_found)
             nlx2mda(rawdatapath,rawdatafiles,destinationpath,destinationfile);
             
         end%tetrodes
-    endswitch
+    end%switch
 end%folders
