@@ -70,6 +70,7 @@ for a = 1:length(animalfolders)
                                         %cluster mat file
                                     elseif strcmpi(files{f},'clusters.mat')
                                         if exist(fullfile(SERVERBASE,animalfolders{a},sessionfolders{s},PIPELINE,'curated',strcat('clusters',num2str(tet),'.mat')),'file')~=2
+                                            copyfile(fullfile(DATABASE,animalfolders{a},sessionfolders{s},'output',datasetfolders{t},files{f}),fullfile(SERVERBASE,animalfolders{a},sessionfolders{s},PIPELINE,strcat('tetrode',num2str(tet)),files{f}));
                                             copyfile(fullfile(DATABASE,animalfolders{a},sessionfolders{s},'output',datasetfolders{t},files{f}),fullfile(SERVERBASE,animalfolders{a},sessionfolders{s},PIPELINE,'curated',strcat('clusters',num2str(tet),'.mat')));
                                         end
                                         % Waveforms file
