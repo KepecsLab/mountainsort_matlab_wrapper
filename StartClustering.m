@@ -4,16 +4,16 @@
 % Torben Ott, CSHL, 2017
 
 %%%%%PARAMS%%%%%%%%%%%%%
-Animals = {'M2','M2','M2'};
-Dates = {'2017-09-21','2017-09-22','2017-09-25'};%for multiple sessions, Animals must be of same length
-Tetrodes={[1:16],[1:16],[1:16]}; %which tetrodes to include, cell of same length as Animals and Dates
-Notify={'Torben','Paul'}; %cell with names; names need to be associated with email in MailAlert.m
+Animals = {'M2'};
+Dates = {'2017-01-26'};%for multiple sessions, Animals must be of same length
+Tetrodes={[1:16]}; %which tetrodes to include, cell of same length as Animals and Dates
+Notify={''}; %cell with names; names need to be associated with email in MailAlert.m
 ServerPathBase =  '/media/confidence/Data/';% source path to nlx files
 DataPathBase = '/hdd/Data/Paul/'; %where to store mda files (big files). recommend HDD.
 SortingPathBase = '/home/hoodoo/mountainsort/'; %where to store mountainlab sorting results (small(er) files). recommend SSD.
-ParamsPath = '/home/hoodoo/mountainlab_scripts/params_default_20170710.json'; %default params file location
-CurationPath = '/home/hoodoo/mountainlab_scripts/annotation.script'; %default curation script location
-Convert2MDA = false; %if set to false, uses converted mda file if present
+ParamsPath = '/home/hoodoo/Documents/MATLAB/mountainsort_matlab_wrapper/params/params_default.json'; %default params file location
+CurationPath = '/home/hoodoo/Documents/MATLAB/mountainsort_matlab_wrapper/params/annotation.script'; %default curation script location
+Convert2MDA = true; %if set to false, uses converted mda file if present
 RunClustering = true; %if set to false, does not run clustering
 Convert2MClust = false; %if set to false, does not convert to MClust readable cluster file (large!)
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -42,15 +42,11 @@ for session = 1:length(Animals)
     tetrodes_config = num2cell(repmat(1:4,tetrodes(end),1),2);
     
     %load animal-specific config file
-    switch animal
-        case 'P36'
-            load('P36Config.mat');
-        case 'P35'
-            load('P35Config.mat');
-        case 'M2'
-            load('M2Config.mat');
-        otherwise
-            warning('No animal config file found. Using all leads of all tetrodes.');
+    TetrodeConfigFile = strcat(animal,'Config.mat');
+    if exist(TetrodeConfigFile,'file')==2
+        load(TetrodeConfigFile);
+    else
+        warning('No animal config file found. Using all leads of all tetrodes.');
     end
     
     %build params struct

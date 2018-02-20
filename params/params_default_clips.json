@@ -20,5 +20,6 @@
 		"adjacency_radius":0,
 		"compute_bursting_parents":true,
 		"compute_metrics":true,
-		"refractory_period":1.5
+		"refractory_period":1.5,
+		"save_clips_features":true
 }

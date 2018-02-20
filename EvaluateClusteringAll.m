@@ -1,8 +1,8 @@
 %% Script to analyse the data in mountainview
 
 %%%% USER %%%%%%%%%
-Animal = 'P39';
-Date = '2017-08-22';%for multiple sessions, Animals must be of same length
+Animal = 'P32';
+Date = '2016-10-28';%for multiple sessions, Animals must be of same length
 %%%%%%%%%%%%%%%%%%
 
 %%%%% PATHS %%%%%%%
