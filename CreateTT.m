@@ -9,8 +9,8 @@
 
 %%%%%%%%%%%%%%% PARAMS%%%%%%%%%%%%%%%%
 SortingPathBase = '/home/hoodoo/mountainsort/'; %where to store mountainlab sorting results (small(er) files). recommend SSD.
-Animal = 'P37';
-Date = '2016-10-32';
+Animal = 'T37';
+Date = '2016-10-31';
 cellbase_times=true; %if false, uses time in seconds
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

@@ -5,9 +5,9 @@ if iscell(persons)
         person=persons{i};
         switch person
             case 'Torben'
-                address = 'm6a1c5v4i4m5t5t0@kepecslab.slack.com';
+                address = 'x';
             case 'Paul'
-                address = 'n1g4g9a6v7u9s9s8@kepecslab.slack.com';
+                address = 'x';
             otherwise
                 fprintf('Add person to mail list on MailAlert.m\n');
                 return
@@ -27,7 +27,7 @@ sent = false;
 setpref('Internet','E_mail','kepecslab.cshl@gmail.com')
 setpref('Internet','SMTP_Server','smtp.gmail.com')
 setpref('Internet','SMTP_Username','kepecslab.cshl@gmail.com')
-setpref('Internet','SMTP_Password','D3cision')
+setpref('Internet','SMTP_Password','x')
 props = java.lang.System.getProperties;
 props.setProperty('mail.smtp.auth','true');
 props.setProperty('mail.smtp.socketFactory.class', 'javax.net.ssl.SSLSocketFactory');

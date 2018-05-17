@@ -135,7 +135,8 @@ function main(params) {
 					{
 						samplerate:params.samplerate,
 						clip_size:clip_size,
-						refractory_period:params.refractory_period
+						refractory_period:params.refractory_period,
+						out_path:params.outpath
 					}
 			).cluster_metrics_out;
 			metrics_files.push(metrics_out);
@@ -147,6 +148,17 @@ function main(params) {
 		).metrics_out;
 		write_file(cluster_metrics,params.outpath+'/cluster_metrics.json');
 		write_file(pair_metrics,params.outpath+'/cluster_pair_metrics.json');
+	}
+	//write clips and features
+	if (params.save_clips_features=='true') {
+		var plugin = {name:'kepecs.waveform_features'};
+		Process(plugin.name,
+					{timeseries_filt:filt,firings:firings},
+					{
+						clip_size:clip_size,
+						out_path:params.outpath
+					}
+			)
 	}
 
 	// Write the output

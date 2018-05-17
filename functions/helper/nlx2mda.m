@@ -58,7 +58,11 @@ for i = 1 : length(file)
     
     %test
     if length(unique(NumberOfValidSamples))>1
-        error('Number of samples not the same for each record.');
+        if length(unique(NumberOfValidSamples(1:end-1)))>1
+            error('Number of samples not the same for each record.');
+        else
+            warning('Number of valid samples for last record low.');
+        end
     end
     if unique(NumberOfValidSamples)~=512
         error('Number of samples per record not 512.');
@@ -77,7 +81,7 @@ for i = 1 : length(file)
     end
     
     SampleFreq = unique(SampleFrequencies);
-    NSample = unique(NumberOfValidSamples);
+    NSample = unique(NumberOfValidSamples(1:end-1));
     NRecord = size(Samples,2);
     header(i) = struct('NLXHeader',{Header},'SampleFreq',SampleFreq,'NSample',NSample,...
         'NRecord',NRecord,'Tstart',Tintersect(1),'log',log{i},'TimeStamps',Tintersect,'CutTimeStamps',Cut{i});
