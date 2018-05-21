@@ -5,17 +5,19 @@
 
 %%%%%PARAMS%%%%%%%%%%%%%
 Animals = {'M2'};
-Dates = {'2017-01-26'};%for multiple sessions, Animals must be of same length
-Tetrodes={[1:16]}; %which tetrodes to include, cell of same length as Animals and Dates
+Dates = {'2017-10-17'};%for multiple sessions, Animals must be of same length
+Trodes={[1:16]}; %which tetrodes to include, cell of same length as Animals and Dates
 Notify={''}; %cell with names; names need to be associated with email in MailAlert.m
 ServerPathBase =  '/media/confidence/Data/';% source path to nlx files
 DataPathBase = '/hdd/Data/Paul/'; %where to store mda files (big files). recommend HDD.
 SortingPathBase = '/home/hoodoo/mountainsort/'; %where to store mountainlab sorting results (small(er) files). recommend SSD.
-ParamsPath = '/home/hoodoo/Documents/MATLAB/mountainsort_matlab_wrapper/params/params_default.json'; %default params file location
+ParamsPath = '/home/hoodoo/Documents/MATLAB/mountainsort_matlab_wrapper/params/params_default_ms4.json'; %default params file location
 CurationPath = '/home/hoodoo/Documents/MATLAB/mountainsort_matlab_wrapper/params/annotation.script'; %default curation script location
+ScriptPath = '/home/hoodoo/Documents/MATLAB/mountainsort_matlab_wrapper/params/ms4_pipeline.ml'; %default curation script location
 Convert2MDA = true; %if set to false, uses converted mda file if present
 RunClustering = true; %if set to false, does not run clustering
 Convert2MClust = false; %if set to false, does not convert to MClust readable cluster file (large!)
+RecSys = 'neuralynx'; %neuralynx or spikegadget
 %%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -35,16 +37,16 @@ for session = 1:length(Animals)
     %
     animal = Animals{session};
     date = Dates{session};
-    tetrodes = Tetrodes{session};
+    trodes = Trodes{session};
     
     %which leads to use
     %default: all 4
-    tetrodes_config = num2cell(repmat(1:4,tetrodes(end),1),2);
+    trodes_config = num2cell(repmat(1:4,trodes(end),1),2);
     
     %load animal-specific config file
-    TetrodeConfigFile = strcat(animal,'Config.mat');
-    if exist(TetrodeConfigFile,'file')==2
-        load(TetrodeConfigFile);
+    TrodeConfigFile = strcat(animal,'Config.mat');
+    if exist(TrodeConfigFile,'file')==2
+        load(TrodeConfigFile);
     else
         warning('No animal config file found. Using all leads of all tetrodes.');
     end
@@ -52,21 +54,23 @@ for session = 1:length(Animals)
     %build params struct
     Params.Date = date;
     Params.Animal = animal;
-    Params.Tetrodes = tetrodes;
-    Params.TetrodesConfig = tetrodes_config;
+    Params.Trodes = trodes;
+    Params.TrodesConfig = trodes_config;
     Params.ServerPathBase = ServerPathBase;
     Params.DataPathBase = DataPathBase;
     Params.SortingPathBase = SortingPathBase;
     Params.ParamsPath = ParamsPath;
     Params.CurationPath = CurationPath;
+    Params.ScriptPath = ScriptPath;
+    Params.RecSys = RecSys;
     
     % convert ncs to mda
     if Convert2MDA
         tic
         try
-            Tetrode2MDALocal(Params);
+            Trode2MDALocal(Params);
         catch
-            MailAlert(Notify,'Hoodoo:SortingWrapperKron','Error:Tetrode2MDALocal.');
+            MailAlert(Notify,'Hoodoo:SortingWrapperKron','Error:Trode2MDALocal.');
         end
         EXTRACTTIME(session) = toc;
     end
@@ -76,7 +80,7 @@ for session = 1:length(Animals)
     if RunClustering
         tic
         try
-            ExecuteSortingKron(Params);
+            ExecuteSorting(Params);
         catch
             MailAlert(Notify,'Hoodoo:SortingWrapperKron','Error:ExecuteSortingKron.');
         end
@@ -88,7 +92,7 @@ for session = 1:length(Animals)
     if Convert2MClust
         tic
         try
-            ConvertToMClust(animal,date,tetrodes,DataPathBase,SortingPathBase);
+            ConvertToMClust(animal,date,trodes,DataPathBase,SortingPathBase);
         catch
             MailAlert(Notify,'Hoodoo:SortingWrapperKron','Error:ConvertToMClust.');
         end

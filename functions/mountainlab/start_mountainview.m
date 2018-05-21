@@ -14,7 +14,7 @@ if length(sessions) > 1
     fprintf('Warning: Multiple sessions found. Specify session index. Starting session 1...');
 end
 
-dataset = fullfile(params.basepath,params.animal,sessions{params.session},'output',['ms3--t',num2str(params.tetrode)]);
+dataset = fullfile(params.basepath,params.animal,sessions{params.session},'ms4',['NT',num2str(params.tetrode)]);
 
 params = struct(...
     'raw',fullfile(dataset,'raw.mda.prv'),... 
@@ -36,6 +36,6 @@ keys=fieldnames(A);
 for j=1:length(keys)
     args=sprintf('%s--%s=%s ',args,keys{j},num2str(A.(keys{j})));
 end;
-cmd=sprintf('%s mountainview %s &',ld_library_str,args);
+cmd=sprintf('%s qt-mountainview %s &',ld_library_str,args);
 fprintf('%s\n',cmd);
-system(cmd);
+mlsystem(cmd);
