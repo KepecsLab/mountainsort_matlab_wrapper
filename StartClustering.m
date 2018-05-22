@@ -7,15 +7,16 @@
 Animals = {'M2'};
 Dates = {'2017-10-17'};%for multiple sessions, Animals must be of same length
 Trodes={[1:16]}; %which tetrodes to include, cell of same length as Animals and Dates
-Notify={''}; %cell with names; names need to be associated with email in MailAlert.m
+Notify={'Torben'}; %cell with names; names need to be associated with email in MailAlert.m
 ServerPathBase =  '/media/confidence/Data/';% source path to nlx files
 DataPathBase = '/hdd/Data/Paul/'; %where to store mda files (big files). recommend HDD.
 SortingPathBase = '/home/hoodoo/mountainsort/'; %where to store mountainlab sorting results (small(er) files). recommend SSD.
 ParamsPath = '/home/hoodoo/Documents/MATLAB/mountainsort_matlab_wrapper/params/params_default_ms4.json'; %default params file location
-CurationPath = '/home/hoodoo/Documents/MATLAB/mountainsort_matlab_wrapper/params/annotation.script'; %default curation script location
+CurationPath = '/home/hoodoo/Documents/MATLAB/mountainsort_matlab_wrapper/params/annotation_ms4.script'; %default curation script location
 ScriptPath = '/home/hoodoo/Documents/MATLAB/mountainsort_matlab_wrapper/params/ms4_pipeline.ml'; %default curation script location
 Convert2MDA = true; %if set to false, uses converted mda file if present
 RunClustering = true; %if set to false, does not run clustering
+ComputeMetrics = true;
 Convert2MClust = false; %if set to false, does not convert to MClust readable cluster file (large!)
 RecSys = 'neuralynx'; %neuralynx or spikegadget
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -82,11 +83,21 @@ for session = 1:length(Animals)
         try
             ExecuteSorting(Params);
         catch
-            MailAlert(Notify,'Hoodoo:SortingWrapperKron','Error:ExecuteSortingKron.');
+            MailAlert(Notify,'Hoodoo:SortingWrapperKron','Error:ExecuteSorting.');
         end
         SORTINGTIME(session) = toc;
     end
     
+    % compute metrics
+    if ComputeMetrics
+        tic
+        try
+            ComputeMetrics_ms3(Params)
+        catch
+            MailAlert(Notify, 'Hoodoo:SortingWrapperKron','Error:CopmuteMetrics');
+        end
+        METRICSTIME(session) = toc;
+    end
     
     % convert to  MClust tetrode data and cluster object
     if Convert2MClust
@@ -101,11 +112,12 @@ for session = 1:length(Animals)
     
 end%session
 
-TIME = sum((EXTRACTTIME + SORTINGTIME + MCLUSTCONVERTTIME))/60;
+TIME = sum((EXTRACTTIME + SORTINGTIME + METRICSTIME + MCLUSTCONVERTTIME))/60;
 fprintf('Overall Time: %2.1f min (session average %2.1f min).\n',TIME,TIME/length(Animals));
 
 save('EXTRACTTIME.mat','EXTRACTTIME');
 save('SORTINGTIME.mat','SORTINGTIME');
+save('METRICSTIME.mat','METRICSTIME');
 save('MCLUSTCONVERTTIME.mat','MCLUSTCONVERTTIME');
 
 %send slack notification

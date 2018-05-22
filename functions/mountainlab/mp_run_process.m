@@ -9,7 +9,7 @@ cmd=[cmd,' ',processor_name];
 cmd=[cmd,' ',create_arg_string(inputs)];
 cmd=[cmd,' ',create_arg_string(outputs)];
 cmd=[cmd,' ',create_arg_string(params)];
-mlsystem(cmd);
+mlsystem_ms3(cmd);
 
 
 function str=create_arg_string(params)
