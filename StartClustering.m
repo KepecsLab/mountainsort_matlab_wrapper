@@ -13,7 +13,6 @@ DataPathBase = '/hdd/Data/Paul/'; %where to store mda files (big files). recomme
 SortingPathBase = '/home/hoodoo/mountainsort/'; %where to store mountainlab sorting results (small(er) files). recommend SSD.
 ParamsPath = '/home/hoodoo/Documents/MATLAB/mountainsort_matlab_wrapper/params/params_default_ms4.json'; %default params file location
 CurationPath = '/home/hoodoo/Documents/MATLAB/mountainsort_matlab_wrapper/params/annotation_ms4.script'; %default curation script location
-ScriptPath = '/home/hoodoo/Documents/MATLAB/mountainsort_matlab_wrapper/params/ms4_pipeline.ml'; %default curation script location
 Convert2MDA = true; %if set to false, uses converted mda file if present
 RunClustering = true; %if set to false, does not run clustering
 ComputeMetrics = true;

@@ -34,7 +34,6 @@ datapathbase = Params.DataPathBase;
 sortingpathbase = Params.SortingPathBase;
 paramssourcepath = Params.ParamsPath;
 curationsourcepath = Params.CurationPath;
-scriptsourcepath = Params.ScriptPath;
 recsys = Params.RecSys;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -77,11 +76,7 @@ for s = 1:length(sessions_found)%sessions of day
         
         %params file
         paramsdestpath = fullfile(tr_folder,'params.json');
-        copyfile(paramssourcepath,paramsdestpath)
-        
-        %ms4 script file
-        scriptdestpath = fullfile(tr_folder,'ms4.ml');
-        copyfile(scriptsourcepath,scriptdestpath)
+        copyfile(paramssourcepath,paramsdestpath) 
         
         %raw data prv
         sourcefilefull = fullfile(sourcefilepath,sourcefilename);
@@ -101,28 +96,38 @@ for s = 1:length(sessions_found)%sessions of day
         outputs.filt_out = fullfile(tr_folder,'filt.mda.prv');
         outputs.pre_out = fullfile(tr_folder,'pre.mda.prv');
         params = loadjson(paramsdestpath);
-        ml_run_script(scriptdestpath,inputs,outputs,params)
+        
+        %filter
+        if params.filter
+            ml_run_process('ms3.bandpass_filter',struct('timeseries',inputs.timeseries),struct('timeseries_out',outputs.filt_out),...
+                struct('samplerate',params.samplerate,'freq_min',params.freq_min,'freq_max',params.freq_max))
+        else
+            outputs.filt_out = inputs.timeseries;
+        end
+          
+        %whiten
+        if params.whiten
+            ml_run_process('ms3.whiten',struct('timeseries',outputs.filt_out),struct('timeseries_out',outputs.pre_out),...
+                struct())
+        else
+            outputs.pre_out = outputs.filt_out;
+        end
+          
+        %sort
+        ml_run_process('ms4alg.sort',struct('timeseries',outputs.pre_out),struct('firings_out',outputs.firings_out),...
+            struct('adjacency_radius',params.adjacency_radius,...
+                   'detect_sign',params.detect_sign,...
+                   'detect_threshold',params.detect_threshold,...
+                   'detect_interval',params.detect_interval,...
+                   'clip_size',params.clip_size,...
+                   'num_workers',params.num_workers));
+        
+               
         
         %convert results back to mat
         %There is now a firings.mda in sortingpathbase,session,animal,ms4,NT*
         %(tr_folder) folder with sorting results
-        
-        %run annotation script
-%         script_fname=fullfile(sortingpathbase,animal,session,'annotation.script');
-%         ml_run_process('mountainsort.run_metrics_script',...
-%             struct('metrics',fullfile(tr_folder,'cluster_metrics.json'),'script',script_fname),...
-%             struct('metrics_out',fullfile(tr_folder,'cluster_metrics_annotated.json')),...
-%             struct());
-        
-%         %compute waveforms
-%         templates_out = fullfile(tr_folder,'templates.mda');
-%         ml_run_process('mountainsort.compute_templates',...
-%             struct('timeseries',fullfile(tr_folder,'filt.mda.prv'), 'firings',fullfile(tr_folder,'firings.mda')),...
-%             struct('templates_out',templates_out),...
-%             struct('clip_size',100));
-        
-        
-       
+              
         %convert to matlab array
         firings = readmda(fullfile(tr_folder,'firings.mda'));
         
@@ -132,15 +137,6 @@ for s = 1:length(sessions_found)%sessions of day
         %save firings and header to result struct
         clusters.header=header.header;
         clusters.firings=firings;
-        
-        %cellbase conversion
-        try
-            NewSpikes = ConvertTimesToCB(clusters);
-            clusters.firings_cellbase = NewSpikes;
-        catch
-            clusters.firings_cellbase = 'ExecuteSortingKron:spike times could not be re-aligned for cellbase.';
-            Errors = [Errors,'ExecuteSortingKron:spike times could not be re-aligned for cellbase for tetrode ',num2str(trodes_used(d)),'.\n'];
-        end
         
         %conversion to seconds
         inRecord = mod( clusters.firings(2,:),clusters.header(1).NSample);

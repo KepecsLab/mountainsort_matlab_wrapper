@@ -2,13 +2,13 @@
 		"samplerate":32556, 
 		"detect_threshold":3.0,
 		"detect_sign":1, 
-		"adjacency_radius":0,
-		"filter":true,
-		"whiten":true,
+		"adjacency_radius":-1,
 		"freq_min":300,
 		"freq_max":6000,
 		"clip_size":50, 
 		"num_workers":0,
 		"detect_interval":10, 
+		"filter":true,
+		"whiten":true,
 		"compute_metrics":true
 }

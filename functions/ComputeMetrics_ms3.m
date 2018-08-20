@@ -33,8 +33,8 @@ recsys = Params.RecSys;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% not yet as param input
 compute_mountainlab_metrics = true;
 compute_template_waveforms = true;
+compute_kepecs_metrics = true;
 tempfolderbase = '/home/hoodoo/mountainsort_temp/';
-WhichMetrics = {'kepecs.mclust_metrics','kepecs.refractory_metrics','kepecs.histogram_metrics'}; %for kepecs metrics
 OutName = 'ComputeMetrics'; %determines file name output
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -65,15 +65,21 @@ for s = 1:length(sessions_found)%sessions of day
         sortparams = loadjson(paramspath);
         params = struct('clip_size',sortparams.clip_size,'refractory_period',1.5,'samplerate',sortparams.samplerate);
         
-        % run kepecs metric processors
-        metrics_list={};
-%         inputs = struct('firings',firings,'timeseries_pre',timeseries_pre,'timeseries_filt',timeseries_filt);
-%         for m = 1:length(WhichMetrics)
-%             metrics_list{m} = fullfile(tempfolderbase,OutName,[WhichMetrics{m},'.json']);
-%             outputs = struct('cluster_metrics_out',metrics_list{m});
-%             ml_run_process(WhichMetrics{m},inputs,outputs,params);
-%         end
+        metrics_list = {};
+        % kepecslab metrics
+        if compute_mountainlab_metrics
+            %refractory metric
+            metrics_list{end+1} = fullfile(tempfolderbase,OutName,'cluster_metrics_kepecs_1.json');
+            ml_run_process('kepecs.refractory_metrics',struct('firings',firings),struct('metrics_out',metrics_list{end}),...
+                struct('samplerate',params.samplerate,'refractory_period',params.refractory_period));
+            
+            %histogram metrics
+            metrics_list{end+1} = fullfile(tempfolderbase,OutName,'cluster_metrics_kepecs_1.json');
+            ml_run_process('kepecs.histogram_metrics',struct('timeseries',timeseries_pre,'firings',firings),struct('metrics_out',metrics_list{end}),...
+                struct());
+        end
         
+        %mountainlab metrics
         if compute_mountainlab_metrics
             %run mountainlab metric processors
             metrics_list{end+1}=fullfile(tempfolderbase,OutName,'cluster_metrics_1.json');

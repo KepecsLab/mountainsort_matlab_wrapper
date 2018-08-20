@@ -1,12 +1,12 @@
 %start mountainview from matlab
 function start_mountainview(params)
 
-if ~isfield(params, 'basepath'), params.basepath='/home/hoodoo/mountainsort'; end
-if ~isfield(params, 'animal'), params.animal='P36'; end
-if ~isfield(params, 'date'), params.date='2017-07-10'; end
-if ~isfield(params, 'tetrode'), params.tetrode=1; end
-if ~isfield(params, 'session'), params.session=1; end
-if ~isfield(params, 'metrics'), params.metrics='cluster_metrics_annotated.json'; end
+% if ~isfield(params, 'basepath'), params.basepath='/home/hoodoo/mountainsort'; end
+% if ~isfield(params, 'animal'), params.animal='P36'; end
+% if ~isfield(params, 'date'), params.date='2017-07-10'; end
+% if ~isfield(params, 'tetrode'), params.tetrode=1; end
+% if ~isfield(params, 'session'), params.session=1; end
+% if ~isfield(params, 'metrics'), params.metrics='cluster_metrics_annotated.json'; end
 
 sessions = findSessions(params.basepath,params.animal,params.date);
 
@@ -16,12 +16,15 @@ end
 
 dataset = fullfile(params.basepath,params.animal,sessions{params.session},'ms4',['NT',num2str(params.tetrode)]);
 
+sort_params = loadjson(fullfile(dataset,'params.json'));
+
+
 params = struct(...
     'raw',fullfile(dataset,'raw.mda.prv'),... 
     'filt',fullfile(dataset,'filt.mda.prv'),...
     'pre',fullfile(dataset,'pre.mda.prv'),...
     'firings',fullfile(dataset,'firings.mda'),...
-    'samplerate',32556,...
+    'samplerate',sort_params.samplerate,...
     'cluster_metrics',fullfile(dataset,params.metrics)...
 );
 
