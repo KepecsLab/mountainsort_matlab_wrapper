@@ -1,23 +1,23 @@
-% wrapper script to convert nlx recording files (*.ncs) to mda files
-% and start mountainlab sorting pipeline.
+% wrapper script to convert recording filesto mda files
+% and run mountainlab sorting pipeline, compute metrics
 
-% Torben Ott, CSHL, 2017
+% Torben Ott, CSHL, 2018
 
 %%%%%PARAMS%%%%%%%%%%%%%
 Animals = {'M2'};
 Dates = {'2017-10-17'};%for multiple sessions, Animals must be of same length
 Trodes={[1:16]}; %which tetrodes to include, cell of same length as Animals and Dates
 Notify={'Torben'}; %cell with names; names need to be associated with email in MailAlert.m
-ServerPathBase =  '/media/confidence/Data/';% source path to nlx files
+ServerPathBase =  '/media/confidence/Data/';% source path to rec files
 DataPathBase = '/hdd/Data/Paul/'; %where to store mda files (big files). recommend HDD.
 SortingPathBase = '/home/hoodoo/mountainsort/'; %where to store mountainlab sorting results (small(er) files). recommend SSD.
 ParamsPath = '/home/hoodoo/Documents/MATLAB/mountainsort_matlab_wrapper/params/params_default_ms4.json'; %default params file location
 CurationPath = '/home/hoodoo/Documents/MATLAB/mountainsort_matlab_wrapper/params/annotation_ms4.script'; %default curation script location
 Convert2MDA = true; %if set to false, uses converted mda file if present
 RunClustering = true; %if set to false, does not run clustering
-ComputeMetrics = true;
+ComputeMetrics = true; %if set to false, does not compute metrics
 Convert2MClust = false; %if set to false, does not convert to MClust readable cluster file (large!)
-RecSys = 'neuralynx'; %neuralynx or spikegadget
+LoadingEngine = 'NLXTetrode'; %user loading engine to convert rec sys data to mda file. See /LoadingEngines/
 %%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -63,12 +63,13 @@ for session = 1:length(Animals)
     Params.CurationPath = CurationPath;
     Params.ScriptPath = ScriptPath;
     Params.RecSys = RecSys;
+    Params.LoadingEngine = LoadingEngine;
     
     % convert ncs to mda
     if Convert2MDA
         tic
         try
-            Trode2MDALocal(Params);
+            Trode2MDA(Params);
         catch
             MailAlert(Notify,'Hoodoo:SortingWrapperKron','Error:Trode2MDALocal.');
         end

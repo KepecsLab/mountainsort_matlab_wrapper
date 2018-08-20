@@ -1,7 +1,7 @@
 %% Script to analyse the data in mountainview
 
 %%%% USER %%%%%%%%%
-view_tetrode=10; %which tetrode to look at
+view_tetrode=9; %which tetrode to look at
 Animal = 'TP06';
 Date = '2018-05-22';%for multiple sessions, Animals must be of same length
 %%%%%%%%%%%%%%%%%%
