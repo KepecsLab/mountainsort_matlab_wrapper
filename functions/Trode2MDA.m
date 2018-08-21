@@ -1,4 +1,4 @@
-function Trode2MDALocal(Params)
+function Trode2MDA(Params)
 %Trode2MDA(...) converts Recording files (e.g. Neuralynx or SpikeGadget continuous recording files) to mountainlab
 %readable mda-files.
 %
@@ -47,10 +47,10 @@ for f = 1:length(sessions_found)
     %required for that session (e.g. all tetrodes). See example template
     %Loading Engines.
     
-    sessionpath = fullfile(serverpathbase,animal,sessionname);
-    outpath = datapathbase;
+    recfilepath = fullfile(serverpathbase,animal,sessionname);
+    mdafilepath = datapathbase;
     
     fun = str2func(Params.LoadingEngine);
-    feval(fun,sessionpath,outpath,Params)
+    feval(fun,'write',recfilepath,mdafilepath,Params);
     
 end%folders

@@ -29,7 +29,6 @@ animal = Params.Animal;
 date = Params.Date;
 trodes=Params.Trodes;
 sortingpathbase = Params.SortingPathBase;
-recsys = Params.RecSys;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% not yet as param input
 compute_mountainlab_metrics = true;
 compute_template_waveforms = true;
@@ -57,7 +56,6 @@ for s = 1:length(sessions_found)%sessions of day
         
         %files
         paramspath = fullfile(tr_folder,'params.json');
-        curationpath = fullfile(tr_folder,'annotation.script');
         timeseries_filt =  fullfile(tr_folder,'filt.mda.prv');
         timeseries_pre =  fullfile(tr_folder,'pre.mda.prv');
         firings = fullfile(tr_folder,'firings.mda');
@@ -67,14 +65,14 @@ for s = 1:length(sessions_found)%sessions of day
         
         metrics_list = {};
         % kepecslab metrics
-        if compute_mountainlab_metrics
+        if compute_kepecs_metrics
             %refractory metric
             metrics_list{end+1} = fullfile(tempfolderbase,OutName,'cluster_metrics_kepecs_1.json');
             ml_run_process('kepecs.refractory_metrics',struct('firings',firings),struct('metrics_out',metrics_list{end}),...
                 struct('samplerate',params.samplerate,'refractory_period',params.refractory_period));
             
             %histogram metrics
-            metrics_list{end+1} = fullfile(tempfolderbase,OutName,'cluster_metrics_kepecs_1.json');
+            metrics_list{end+1} = fullfile(tempfolderbase,OutName,'cluster_metrics_kepecs_2.json');
             ml_run_process('kepecs.histogram_metrics',struct('timeseries',timeseries_pre,'firings',firings),struct('metrics_out',metrics_list{end}),...
                 struct());
         end

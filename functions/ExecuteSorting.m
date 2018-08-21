@@ -34,7 +34,6 @@ datapathbase = Params.DataPathBase;
 sortingpathbase = Params.SortingPathBase;
 paramssourcepath = Params.ParamsPath;
 curationsourcepath = Params.CurationPath;
-recsys = Params.RecSys;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 sessions_found = findSessions(datapathbase,animal,date);
@@ -48,20 +47,20 @@ for s = 1:length(sessions_found)%sessions of day
     % used tetrodes
     use_trode = true(1,length(trodes));
     
+    %raw mda file full paths
+    package_path = fileparts(fileparts(mfilename('fullpath')));
+    engine_path = fullfile(package_path,'LoadingEngines',Params.LoadingEngine);
+    addpath(engine_path);    
+    fun = str2func(Params.LoadingEngine);
+    MDAFiles = feval(fun,'path','',fullfile(datapathbase,animal,session),Params);
+    
+    
     for d = 1:length(trodes) %datasets (n-trodes)
         
         tr = trodes(d);
         
-        switch recsys
-            case 'neuralynx'
-                sourcefilename = strcat('trode',num2str(tr),'.mda');
-                sourcefilepath = fullfile(datapathbase,animal,session,sourcefilename(1:end-4));
-            case 'spikegadgets'
-                ndx = regexp(session,'.mda');
-                sourcefilename = strcat(session(1:ndx-1),'.nt',num2str(tr),'.mda');
-                sourcefilepath = fullfile(datapathbase,animal,session);
-        end%switch
-        
+        %mda file full path
+        sourcefilefull = MDAFiles{d};
         
         tr_folder = fullfile(sortingpathbase,animal,session,'ms4',strcat('NT',num2str(tr)));
         
@@ -79,8 +78,6 @@ for s = 1:length(sessions_found)%sessions of day
         copyfile(paramssourcepath,paramsdestpath) 
         
         %raw data prv
-        sourcefilefull = fullfile(sourcefilepath,sourcefilename);
-        
         if exist(sourcefilefull,'file')~=2
             fprintf('Skipped session %s trode %s (no mda-file).ExecuteSorting.\n',session,num2str(tr));
             use_trode(d)=false;
@@ -90,7 +87,7 @@ for s = 1:length(sessions_found)%sessions of day
         %create prv for raw file
         mlsystem(['ml-prv-create ',sourcefilefull,' ',fullfile(tr_folder,'raw.mda.prv')]);
         
-        %%RUN SORTING PIPELINE
+        %% RUN SORTING PIPELINE
         inputs.timeseries = fullfile(tr_folder,'raw.mda.prv');
         outputs.firings_out = fullfile(tr_folder,'firings.mda');
         outputs.filt_out = fullfile(tr_folder,'filt.mda.prv');
@@ -114,35 +111,47 @@ for s = 1:length(sessions_found)%sessions of day
         end
           
         %sort
-        ml_run_process('ms4alg.sort',struct('timeseries',outputs.pre_out),struct('firings_out',outputs.firings_out),...
+        if isfield(Params,'GeomPath') && ~isempty(Params.GeomPath)
+            if exist(Params.GemPath,'file') == 2
+                Input = struct('timeseries',outputs.pre_out,'geom',Params.GeomPath );
+            else
+                warning('Geom file not found at %s.\n',Params.GeomPath);
+            end
+        else
+            Input = struct('timeseries',outputs.pre_out);
+        end
+        ml_run_process('ms4alg.sort',Input,struct('firings_out',outputs.firings_out),...
             struct('adjacency_radius',params.adjacency_radius,...
-                   'detect_sign',params.detect_sign,...
-                   'detect_threshold',params.detect_threshold,...
-                   'detect_interval',params.detect_interval,...
-                   'clip_size',params.clip_size,...
-                   'num_workers',params.num_workers));
+            'detect_sign',params.detect_sign,...
+            'detect_threshold',params.detect_threshold,...
+            'detect_interval',params.detect_interval,...
+            'clip_size',params.clip_size,...
+            'num_workers',params.num_workers));
         
-               
+        
         
         %convert results back to mat
         %There is now a firings.mda in sortingpathbase,session,animal,ms4,NT*
         %(tr_folder) folder with sorting results
-              
+        
         %convert to matlab array
         firings = readmda(fullfile(tr_folder,'firings.mda'));
         
-        %add original nlx header info
-        header = load(fullfile(datapathbase,animal,session,sourcefilename(1:end-4),[sourcefilename(1:end-4),'header.mat']));
+        %add recording file header info and convert firings timestamps to seconds
+        %(by loading engine, optional) 
+        try
+            add = feval(fun,'header','',fullfile(datapathbase,animal,session),Params,fullfile(tr_folder,'firings.mda'));
+            fields = fieldnames(add);
+            for f = 1:length(fields)
+                clusters.(fields{f}) = add.(fields{f});
+            end
+        catch
+            warning('ExecuteSorting:No header mode in Loading Engine. No header written to clusters.mat.\n');
+        end
         
-        %save firings and header to result struct
-        clusters.header=header.header;
+        
+        %save firings to result struct
         clusters.firings=firings;
-        
-        %conversion to seconds
-        inRecord = mod( clusters.firings(2,:),clusters.header(1).NSample);
-        iRecord = floor( clusters.firings(2,:)./clusters.header(1).NSample)+1;
-        NewSpikes = clusters.header(1).TimeStamps(iRecord)*10^-6 + inRecord/clusters.header(1).SampleFreq;
-        clusters.firings_seconds = NewSpikes;
         
         %save as mat in output folder
         save(fullfile(tr_folder,'clusters.mat'),'clusters');
