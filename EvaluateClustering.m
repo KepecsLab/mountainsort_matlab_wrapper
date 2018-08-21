@@ -1,7 +1,7 @@
 %% Script to analyse the data in mountainview
 
 %%%% USER %%%%%%%%%
-view_tetrode=9; %which tetrode to look at
+view_trode=9; %which tetrode to look at
 Animal = 'TP06';
 Date = '2018-05-22';%for multiple sessions, Animals must be of same length
 %%%%%%%%%%%%%%%%%%
@@ -13,7 +13,7 @@ sortingpathbase = '/home/hoodoo/mountainsort/'; %where to store mountainlab sort
 %%%%%%%%%%%%%%%%%%
 
 %%%% RUN %%%%%%%%%
-params=struct('basepath',sortingpathbase,'animal',Animal,'date',Date,'tetrode',view_tetrode,...
+params=struct('basepath',sortingpathbase,'animal',Animal,'date',Date,'tetrode',view_trode,...
     'metrics','cluster_metrics_annotated.json','session',1);
 % ALL MOUNTAINVIEW
  start_mountainview(params);

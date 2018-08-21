@@ -63,7 +63,6 @@ for session = 1:length(Animals)
     Params.ParamsPath = ParamsPath;
     Params.CurationPath = CurationPath;
     Params.ScriptPath = ScriptPath;
-    Params.RecSys = RecSys;
     Params.LoadingEngine = LoadingEngine;
     Params.GeomPath = GeomPath;
     

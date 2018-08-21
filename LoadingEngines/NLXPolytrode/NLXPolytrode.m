@@ -1,11 +1,10 @@
-function NLXPolyTrode(mode,recfilepath,mdafilepath,Params,firingspath)
+function out = NLXPolytrode(mode,recfilepath,mdafilepath,Params,firingspath)
 %LoadingEngine to convert Neuralynx .ncs files to mda file
 % requires a Params.TrodesConfig to define the mapping or ordering and
 % composition of .ncs files into trodes such that they match the geom.csv
 % file that defines the probe site geometry for each trode
 % Fitz Sturgill, 2018
 
-%INPUTS: sessionpath - path to .ncs files of specific session
 %INPUTS: mode - 3 options: 'write' for writing mda files.
 %                          'path' for returning path and name of previously
 %                                  written mda files for a session
@@ -15,7 +14,7 @@ function NLXPolyTrode(mode,recfilepath,mdafilepath,Params,firingspath)
 %                                   (see ExecuteSorting.m)
 %        recfilepath - path to .ncs files of specific session
 %        mdafilepath - path to .mda files of specific session
-%        Params - struct with original sorting wrapper Params (see
+%        Params - struct with origExecuteSorting(Params);inal sorting wrapper Params (see
 %                 StartClustering.m)
 %        firingspath - path to firings.mda. only used by header mode
 %
@@ -67,7 +66,7 @@ switch mode
 %             trodes_config = {mapping(:,1), mapping(:,2)};
 
             rawdatafiles_index = trodes_config{trodes(i)}; % maps NCS files into mc4 site number and geom.csv file indices
-            rawdatapath=sessionpath;
+            rawdatapath=recfilepath;
             rawdatafiles=cell(1,length(rawdatafiles_index));
             
             for k = 1 : length(rawdatafiles_index)
@@ -83,8 +82,8 @@ switch mode
             end
 
             %file destination
-            [~,sessionname] = fileparts(sessionpath);
-            destinationpath = fullfile(outpath,animal,sessionname,['trode',num2str(tr)]);
+            [~,sessionname] = fileparts(recfilepath);
+            destinationpath = fullfile(mdafilepath,animal,sessionname,['trode',num2str(tr)]);
             if ~isdir(destinationpath)
                 mkdir(destinationpath);
             end

@@ -118,7 +118,7 @@ for s = 1:length(sessions_found)%sessions of day
           
         %sort
         if isfield(Params,'GeomPath') && ~isempty(Params.GeomPath)
-            if exist(Params.GemPath,'file') == 2
+            if exist(Params.GeomPath,'file') == 2
                 Input = struct('timeseries',outputs.pre_out,'geom',Params.GeomPath );
             else
                 warning('Geom file not found at %s.\n',Params.GeomPath);
