@@ -40,9 +40,10 @@ for f = 1:length(sessions_found)
     
     %Loading Engine needs to be a function (Params.LoadingEngine).m in
     %/LoadingEngines/Params.LoadingEngine folder with:
-    % input: sessionpath - path to recording session data
-    %        outpath - base path to destination (for mda files)
-    %        Params struct for itnernal function usage of parameters
+    % input: mode - 'write' use here
+    %        recfilepath - path to recording session data
+    %        mdafilepath - base path to destination (for mda files)
+    %        Params - struct for itnernal function usage of parameters
     %(Params.LoadingEngine).m needs to write session mda file for all datasets
     %required for that session (e.g. all tetrodes). See example template
     %Loading Engines.

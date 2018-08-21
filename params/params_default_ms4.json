@@ -9,6 +9,7 @@
 		"num_workers":0,
 		"detect_interval":10, 
 		"filter":true,
+                "mask_out_artifacts":true,
 		"whiten":true,
 		"compute_metrics":true
 }

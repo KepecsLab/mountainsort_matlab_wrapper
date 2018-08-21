@@ -101,6 +101,12 @@ for s = 1:length(sessions_found)%sessions of day
         else
             outputs.filt_out = inputs.timeseries;
         end
+        
+        %mask out artifacts
+        if params.mask_out_artifacts
+            ml_run_process('ms3.mask_out_artifacts',struct('timeseries',outputs.filt_out),struct('timeseries_out',outputs.filt_out),...
+                struct('threshold',6,'interval_size',2000))
+        end
           
         %whiten
         if params.whiten

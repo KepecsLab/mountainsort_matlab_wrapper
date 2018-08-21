@@ -1,6 +1,7 @@
 function ml_run_process(processor_name,inputs,outputs,params)
 
-%% Example: mp_run_process('mountainsort.bandpass_filter',struct('timeseries','tetrode6.mda'),struct('timeseries_out','tetrode6_filt.mda'),struct('samplerate',32556,'freq_min',300,'freq_max',6000));
+% Example:
+% ml_run_process('ms3.bandpass_filter',struct('timeseries','tetrode6.mda'),struct('timeseries_out','tetrode6_filt.mda'),struct('samplerate',32556,'freq_min',300,'freq_max',6000));
 
 if nargin<4, params=struct; end;
 
